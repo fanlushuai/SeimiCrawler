@@ -229,7 +229,8 @@ public class CrawlerModel {
     }
 
     public synchronized CookieStore initApcCookieStore(String account) {
-        return aphcCookieStore.put(account, new BasicCookieStore());
+        aphcCookieStore.put(account, new BasicCookieStore());
+        return aphcCookieStore.get(account);
     }
 
     public CookiesManager getOkHttpCookiesManager(String account) {
@@ -241,7 +242,8 @@ public class CrawlerModel {
     }
 
     public synchronized CookiesManager initOkHttpCookiesManager(String account) {
-        return okHttpCookiesManager.put(account, new CookiesManager());
+        okHttpCookiesManager.put(account, new CookiesManager());
+        return okHttpCookiesManager.get(account);
     }
 
     public SeimiQueue getQueueInstance() {
