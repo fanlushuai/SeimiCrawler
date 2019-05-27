@@ -26,6 +26,7 @@ import java.util.List;
  * @since 2016/6/26.
  */
 public interface SeimiDownloader {
+
     /**
      * 处理抓取请求生成response
      * @param request 请求
@@ -36,7 +37,6 @@ public interface SeimiDownloader {
 
     /**
      * 处理meta标签refresh场景
-     *
      * @param nextUrl 重定向URL
      * @return 请求的最终返回体
      * @throws Exception --
@@ -50,10 +50,11 @@ public interface SeimiDownloader {
     int statusCode();
 
     /**
-     * 添加自定义cookies
-     * @param url 目标地址
-     * @param seimiCookies cookies
+     * 添加cookie
+     * @param account 账号。没有采用默认global
+     * @param url
+     * @param seimiCookies
      */
-    void addCookies(String url, List<SeimiCookie> seimiCookies);
+    void addCookies(String account, String url, List<SeimiCookie> seimiCookies);
 
 }

@@ -15,7 +15,6 @@
  */
 package cn.wanghaomiao.seimi.struct;
 
-
 import cn.wanghaomiao.seimi.annotation.Crawler;
 import cn.wanghaomiao.seimi.core.SeimiQueue;
 import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
@@ -42,29 +41,49 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author github.com/zhegexiaohuozi seimimaster@gmail.com
  * Date: 2015/7/17.
  */
 public class CrawlerModel {
+
     private ApplicationContext context;
+
     private BaseSeimiCrawler instance;
+
     private Class<? extends BaseSeimiCrawler> clazz;
+
     private SeimiQueue queueInstance;
+
     private Class<? extends SeimiQueue> queueClass;
+
     private Map<String, Method> memberMethods;
+
     private Map<Integer, String> referenceToMethod = new HashMap<>();
+
     private String crawlerName;
+
     private HttpHost proxy;
+
     private boolean useCookie = false;
+
     private String currentUA;
+
     private boolean useUnrepeated = true;
+
     private int delay = 0;
+
     private SeimiHttpType seimiHttpType;
+
     private int httpTimeOut;
+
     private CookieStore aphcCookieStore = new BasicCookieStore();
-    private CookiesManager okHttpCookiesManager = new CookiesManager();
+
+    //    private CookiesManager okHttpCookiesManager = new CookiesManager();
+    private Map<String, CookiesManager> okHttpCookiesManager = new ConcurrentHashMap<>();
+
     private Logger logger = LoggerFactory.getLogger(CrawlerModel.class);
 
     public CrawlerModel(Class<? extends BaseSeimiCrawler> cls, ApplicationContext applicationContext) {
@@ -204,8 +223,17 @@ public class CrawlerModel {
         return aphcCookieStore;
     }
 
-    public CookiesManager getOkHttpCookiesManager() {
-        return okHttpCookiesManager;
+    public CookiesManager getOkHttpCookiesManager(String account) {
+        if (okHttpCookiesManager.get(account) != null) {
+            return okHttpCookiesManager.get(account);
+        }
+
+        return initOkHttpCookiesManager(account);
+    }
+
+    public synchronized CookiesManager initOkHttpCookiesManager(String account) {
+        okHttpCookiesManager.put(account, new CookiesManager());
+        return okHttpCookiesManager.get(account);
     }
 
     public SeimiQueue getQueueInstance() {
@@ -248,7 +276,7 @@ public class CrawlerModel {
 
     public void sendRequest(Request request) {
         request.setCrawlerName(crawlerName);
-        if (!checkRequest(request)){
+        if (!checkRequest(request)) {
             return;
         }
         if (request.isLambdaCb()) {
@@ -258,7 +286,7 @@ public class CrawlerModel {
         queueInstance.addProcessed(request);
     }
 
-    public boolean checkRequest(Request request){
+    public boolean checkRequest(Request request) {
         //如果启用了系统级去重机制并且为首次处理则判断一个Request是否已经被处理过了
         if (!request.isSkipDuplicateFilter() && isUseUnrepeated() && queueInstance.isProcessed(request) && request.getCurrentReqCount() == 0) {
             logger.debug("This request has bean processed,so current request={} will be dropped!", JSON.toJSONString(request));

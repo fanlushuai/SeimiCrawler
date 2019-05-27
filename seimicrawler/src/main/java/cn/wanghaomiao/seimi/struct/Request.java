@@ -15,7 +15,6 @@
  */
 package cn.wanghaomiao.seimi.struct;
 
-
 import cn.wanghaomiao.seimi.annotation.validate.NotNull;
 import cn.wanghaomiao.seimi.core.SeimiCrawler;
 import cn.wanghaomiao.seimi.http.HttpMethod;
@@ -26,20 +25,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * 封装一个抓取请求的基本信息体
  * @author github.com/zhegexiaohuozi seimimaster@gmail.com
- *         Date:  14-7-7.
+ * Date:  14-7-7.
  */
 public class Request extends CommonObject {
 
     @FunctionalInterface
-    public static interface SeimiCallbackFunc<T,A1>{
+    public static interface SeimiCallbackFunc<T, A1> {
+
         void call(T t, A1 a1);
     }
 
-    public <T,A1> Request(String url, String callBack, SeimiCallbackFunc<T,A1> cbFunc, HttpMethod httpMethod, Map<String, String> params, Map<String, Object> meta, int maxReqCount) {
+    public <T, A1> Request(String url, String callBack, SeimiCallbackFunc<T, A1> cbFunc, HttpMethod httpMethod, Map<String, String> params, Map<String, Object> meta, int maxReqCount) {
         this.url = url;
         this.httpMethod = httpMethod;
         this.params = params;
@@ -47,66 +46,79 @@ public class Request extends CommonObject {
         this.callBack = callBack;
         this.maxReqCount = maxReqCount;
         this.callBackFunc = cbFunc;
-        if (callBackFunc!=null){
+        if (callBackFunc != null) {
             this.lambdaCb = true;
         }
     }
 
-    public Request(String url,String callBack){
+    public Request(String url, String callBack) {
         this.url = url;
         this.callBack = callBack;
     }
 
-    public <T,A1> Request(String url,SeimiCallbackFunc<T,A1> callBackFunc){
+    public <T, A1> Request(String url, SeimiCallbackFunc<T, A1> callBackFunc) {
         this.url = url;
         this.callBackFunc = callBackFunc;
         this.lambdaCb = true;
     }
 
-
-    public static <T,A1> Request build(String url, String callBack,SeimiCallbackFunc<T,A1> callBackFunc, HttpMethod httpMethod, Map<String, String> params, Map<String, Object> meta,int maxReqcount){
-        return new Request(url, callBack,callBackFunc, httpMethod, params, meta, maxReqcount);
+    public static <T, A1> Request build(String url, String callBack, SeimiCallbackFunc<T, A1> callBackFunc, HttpMethod httpMethod, Map<String, String> params, Map<String, Object> meta, int maxReqcount) {
+        return new Request(url, callBack, callBackFunc, httpMethod, params, meta, maxReqcount);
     }
 
-    public static Request build(String url, String callBack, HttpMethod httpMethod, Map<String, String> params, Map<String, Object> meta){
-        return new Request(url, callBack,null, httpMethod, params, meta,1);
+    public static Request build(String url, String callBack, HttpMethod httpMethod, Map<String, String> params, Map<String, Object> meta) {
+        return new Request(url, callBack, null, httpMethod, params, meta, 1);
     }
 
-    public static Request build(String url, String callBack){
-        return new Request(url, callBack,null,null,null,null,1);
+    public static Request build(String url, String callBack) {
+        return new Request(url, callBack, null, null, null, null, 1);
     }
 
-    public static <T ,A1> Request build(String url, SeimiCallbackFunc<T,A1> callBackFunc){
-        return new Request(url, null, callBackFunc,null,null,null,1);
+    public static <T, A1> Request build(String url, SeimiCallbackFunc<T, A1> callBackFunc) {
+        return new Request(url, null, callBackFunc, null, null, null, 1);
     }
 
-    public static Request build(String url, String callBack, int maxReqCount){
-        return new Request(url, callBack,null,null,null,null, maxReqCount);
+    public static Request build(String url, String callBack, int maxReqCount) {
+        return new Request(url, callBack, null, null, null, null, maxReqCount);
     }
 
-    public Request(){
+    public Request() {
         super();
     }
 
     @NotNull
     private String crawlerName;
+
+    /**
+     * 用于定位请求的账号主。用来分离存储账号cookie。默认全局账号。
+     */
+    private String useCookieOfAccount = "global";
+
+    public String getUseCookieOfAccount() {
+        return useCookieOfAccount;
+    }
+
     /**
      * 需要请求的url
      */
     @NotNull
     private String url;
+
     /**
      * 要请求的方法类型 get,post,put...
      */
     private HttpMethod httpMethod;
+
     /**
      * 如果请求需要参数，那么将参数放在这里
      */
-    private Map<String,String> params;
+    private Map<String, String> params;
+
     /**
      * 这个主要用于存储向下级回调函数传递的一些自定义数据
      */
-    private Map<String,Object> meta;
+    private Map<String, Object> meta;
+
     /**
      * 回调函数方法名
      */
@@ -117,14 +129,17 @@ public class Request extends CommonObject {
      * 回调函数是否为Lambda表达式
      */
     private transient boolean lambdaCb = false;
+
     /**
      * 回调函数
      */
     private transient SeimiCallbackFunc callBackFunc;
+
     /**
      * 是否停止的信号，收到该信号的处理线程会退出
      */
     private boolean stop = false;
+
     /**
      * 最大可被重新请求次数
      */
@@ -144,10 +159,11 @@ public class Request extends CommonObject {
      * 针对该请求是否启用SeimiAgent
      */
     private boolean useSeimiAgent = false;
-	/**
+
+    /**
      * 自定义Http请求协议头
      */
-    private Map<String,String> header;
+    private Map<String, String> header;
 
     /**
      * 定义SeimiAgent的渲染时间，单位毫秒
@@ -174,8 +190,8 @@ public class Request extends CommonObject {
      */
     private List<SeimiCookie> seimiCookies;
 
-    public void incrReqCount(){
-        this.currentReqCount +=1;
+    public void incrReqCount() {
+        this.currentReqCount += 1;
     }
 
     public String getUrl() {
@@ -207,7 +223,7 @@ public class Request extends CommonObject {
 
     public Map<String, Object> getMeta() {
         //保证用起来时可定不为空，方便使用
-        if (meta == null){
+        if (meta == null) {
             meta = new HashMap<>();
         }
         return meta;
@@ -278,17 +294,17 @@ public class Request extends CommonObject {
         return this;
     }
 
-    public Request useSeimiAgent(){
+    public Request useSeimiAgent() {
         this.useSeimiAgent = true;
         return this;
     }
 
-    public Request setUseSeimiAgent(boolean useSeimiAgent){
+    public Request setUseSeimiAgent(boolean useSeimiAgent) {
         this.useSeimiAgent = useSeimiAgent;
         return this;
     }
 
-    public boolean isUseSeimiAgent(){
+    public boolean isUseSeimiAgent() {
         return useSeimiAgent;
     }
 
