@@ -54,10 +54,11 @@ import java.util.List;
  */
 public class HcDownloader implements SeimiDownloader {
 
-    public HcDownloader(CrawlerModel crawlerModel) {
+    public HcDownloader(CrawlerModel crawlerModel, Request request) {
         this.crawlerModel = crawlerModel;
+        currentRequest = request;
         if (crawlerModel.isUseCookie()) {
-            hc = HttpClientFactory.getHttpClient(crawlerModel.getHttpTimeOut(), crawlerModel.getCookieStore());
+            hc = HttpClientFactory.getHttpClient(crawlerModel.getHttpTimeOut(), crawlerModel.getCookieStore(request.getUseCookieOfAccount()));
         } else {
             hc = HttpClientFactory.getHttpClient(crawlerModel.getHttpTimeOut());
         }
@@ -80,7 +81,6 @@ public class HcDownloader implements SeimiDownloader {
     @Override
     public Response process(Request request) throws Exception {
         currentReqBuilder = HcRequestGenerator.getHttpRequestBuilder(request, crawlerModel);
-        currentRequest = request;
         addCookies(request.getUseCookieOfAccount(), request.getUrl(), request.getSeimiCookies());
         httpResponse = hc.execute(currentReqBuilder.build(), httpContext);
         return renderResponse(httpResponse, request, httpContext);
@@ -95,6 +95,7 @@ public class HcDownloader implements SeimiDownloader {
         logger.info("Seimi refresh url to={} from={}", nextUrl, currentReqBuilder.getUri());
         currentReqBuilder.setUri(nextUrl);
         httpResponse = hc.execute(currentReqBuilder.build(), httpContext);
+
         return renderResponse(httpResponse, currentRequest, httpContext);
     }
 
@@ -108,7 +109,7 @@ public class HcDownloader implements SeimiDownloader {
         if (seimiCookies == null || seimiCookies.size() <= 0) {
             return;
         }
-        CookieStore cookieStore = crawlerModel.getCookieStore();
+        CookieStore cookieStore = crawlerModel.getCookieStore(account);
         for (SeimiCookie seimiCookie : seimiCookies) {
             BasicClientCookie cookie = new BasicClientCookie(seimiCookie.getName(), seimiCookie.getValue());
             cookie.setPath(StringUtils.isNotBlank(seimiCookie.getPath()) ? seimiCookie.getPath() : "/");

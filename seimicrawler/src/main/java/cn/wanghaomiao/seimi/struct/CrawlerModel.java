@@ -79,7 +79,8 @@ public class CrawlerModel {
 
     private int httpTimeOut;
 
-    private CookieStore aphcCookieStore = new BasicCookieStore();
+    //    private CookieStore aphcCookieStore = new BasicCookieStore();
+    private Map<String, CookieStore> aphcCookieStore = new ConcurrentHashMap<>();
 
     //    private CookiesManager okHttpCookiesManager = new CookiesManager();
     private Map<String, CookiesManager> okHttpCookiesManager = new ConcurrentHashMap<>();
@@ -219,8 +220,16 @@ public class CrawlerModel {
         return httpTimeOut;
     }
 
-    public CookieStore getCookieStore() {
-        return aphcCookieStore;
+    public CookieStore getCookieStore(String account) {
+        if (aphcCookieStore.get(account) != null) {
+            return aphcCookieStore.get(account);
+        }
+
+        return initApcCookieStore(account);
+    }
+
+    public synchronized CookieStore initApcCookieStore(String account) {
+        return aphcCookieStore.put(account, new BasicCookieStore());
     }
 
     public CookiesManager getOkHttpCookiesManager(String account) {
@@ -232,8 +241,7 @@ public class CrawlerModel {
     }
 
     public synchronized CookiesManager initOkHttpCookiesManager(String account) {
-        okHttpCookiesManager.put(account, new CookiesManager());
-        return okHttpCookiesManager.get(account);
+        return okHttpCookiesManager.put(account, new CookiesManager());
     }
 
     public SeimiQueue getQueueInstance() {

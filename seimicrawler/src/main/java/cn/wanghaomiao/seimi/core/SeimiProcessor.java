@@ -93,7 +93,7 @@ public class SeimiProcessor implements Runnable {
 
                 SeimiDownloader downloader;
                 if (SeimiHttpType.APACHE_HC.val() == crawlerModel.getSeimiHttpType().val()) {
-                    downloader = new HcDownloader(crawlerModel);
+                    downloader = new HcDownloader(crawlerModel,request);
                 } else {
                     downloader = new OkHttpDownloader(crawlerModel);
                 }
