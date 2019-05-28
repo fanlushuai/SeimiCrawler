@@ -229,6 +229,10 @@ public class CrawlerModel {
     }
 
     public synchronized CookieStore initApcCookieStore(String account) {
+        if (aphcCookieStore.get(account) != null) {
+            return aphcCookieStore.get(account);
+        }
+
         aphcCookieStore.put(account, new BasicCookieStore());
         return aphcCookieStore.get(account);
     }
@@ -242,6 +246,10 @@ public class CrawlerModel {
     }
 
     public synchronized CookiesManager initOkHttpCookiesManager(String account) {
+        if (okHttpCookiesManager.get(account) != null) {
+            return okHttpCookiesManager.get(account);
+        }
+
         okHttpCookiesManager.put(account, new CookiesManager());
         return okHttpCookiesManager.get(account);
     }

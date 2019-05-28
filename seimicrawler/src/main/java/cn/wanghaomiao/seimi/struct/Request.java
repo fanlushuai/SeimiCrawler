@@ -212,6 +212,11 @@ public class Request extends CommonObject {
         return this;
     }
 
+    public Request setUseCookieOfAccount(String useCookieOfAccount) {
+        this.useCookieOfAccount = useCookieOfAccount;
+        return this;
+    }
+
     public Map<String, String> getParams() {
         return params;
     }
