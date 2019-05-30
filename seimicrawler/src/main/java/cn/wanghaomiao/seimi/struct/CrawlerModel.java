@@ -15,7 +15,9 @@
  */
 package cn.wanghaomiao.seimi.struct;
 
+import cn.wanghaomiao.seimi.Constants;
 import cn.wanghaomiao.seimi.annotation.Crawler;
+import cn.wanghaomiao.seimi.core.SeimiCookiePool;
 import cn.wanghaomiao.seimi.core.SeimiQueue;
 import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
 import cn.wanghaomiao.seimi.http.HttpMethod;
@@ -85,6 +87,14 @@ public class CrawlerModel {
     //    private CookiesManager okHttpCookiesManager = new CookiesManager();
     private Map<String, CookiesManager> okHttpCookiesManager = new ConcurrentHashMap<>();
 
+    private SeimiCookiePool seimiCookiePoolInstance;
+
+    private Class<? extends SeimiCookiePool> seimiCookiePoolClass;
+
+    private String cookieField;
+
+    private int threadPoolSize;
+
     private Logger logger = LoggerFactory.getLogger(CrawlerModel.class);
 
     public CrawlerModel(Class<? extends BaseSeimiCrawler> cls, ApplicationContext applicationContext) {
@@ -112,6 +122,13 @@ public class CrawlerModel {
         this.useUnrepeated = c.useUnrepeated();
         this.seimiHttpType = c.httpType();
         this.httpTimeOut = c.httpTimeOut();
+
+        //自定义cookie池
+        this.seimiCookiePoolClass = c.cookiePool();
+        this.seimiCookiePoolInstance = context.getBean(c.cookiePool());
+        this.cookieField = c.cookieField();
+        //自定义线程池大小
+        this.threadPoolSize = c.threadPoolSize() == -1 ? Constants.BASE_THREAD_NUM * Runtime.getRuntime().availableProcessors() : c.threadPoolSize();
         logger.info("Crawler[{}] init complete.", crawlerName);
     }
 
@@ -329,5 +346,13 @@ public class CrawlerModel {
         methodName = method.getName();
         referenceToMethod.put(methodRef.hashCode(), methodName);
         return methodName;
+    }
+
+    public String getCookieField() {
+        return cookieField;
+    }
+
+    public int getThreadPoolSize() {
+        return threadPoolSize;
     }
 }

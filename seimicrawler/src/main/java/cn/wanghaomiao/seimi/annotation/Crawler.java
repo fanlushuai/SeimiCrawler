@@ -15,35 +15,33 @@
  */
 package cn.wanghaomiao.seimi.annotation;
 
+import cn.wanghaomiao.seimi.core.SeimiCookiePool;
 import cn.wanghaomiao.seimi.core.SeimiQueue;
 import cn.wanghaomiao.seimi.def.DefaultLocalQueue;
+import cn.wanghaomiao.seimi.def.MemCookiePool;
 import cn.wanghaomiao.seimi.http.SeimiHttpType;
 import org.springframework.stereotype.Component;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * 用于定义一个类为爬虫规则文件
- *
  * @author github.com/zhegexiaohuozi seimimaster@gmail.com
- *         Date: 2015/5/28.
+ * Date: 2015/5/28.
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Component
 public @interface Crawler {
+
     /**
      * @return 如果需要特殊指定爬虫规则的名字，那么就设置这个就好了，默认爬虫类名
      */
     String name() default "";
 
     /**
-     * @return  e.g.  http://user:passwd@host:port
+     * @return e.g.  http://user:passwd@host:port
      * https://user:passwd@host:port
      * socket://user:passwd@host:port
      */
@@ -65,7 +63,7 @@ public @interface Crawler {
     Class<? extends SeimiQueue> queue() default DefaultLocalQueue.class;
 
     /**
-     * @return  是否启用系统级去重机制，默认启用
+     * @return 是否启用系统级去重机制，默认启用
      */
     boolean useUnrepeated() default true;
 
@@ -78,4 +76,16 @@ public @interface Crawler {
      * @return 支持自定义超时时间，单位毫秒，默认15000ms
      */
     int httpTimeOut() default 15000;
+
+    /**
+     * 自定义线程池大小,-1 系统使用默认逻辑。
+     */
+    int threadPoolSize() default -1;
+
+    /**
+     * 自定义cookie池
+     */
+    Class<? extends SeimiCookiePool> cookiePool() default MemCookiePool.class;
+
+    String cookieField() default "common";
 }

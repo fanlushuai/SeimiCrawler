@@ -16,20 +16,23 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * @author: github.com/zhegexiaohuozi seimimaster@gmail.com
  * @since 2018/5/7.
  */
 public class SeimiCrawlerBootstrapListener implements ApplicationListener<ContextRefreshedEvent> {
 
     private ExecutorService workersPool;
+
     private boolean isSpringBoot = false;
 
-    public SeimiCrawlerBootstrapListener(){
+    public SeimiCrawlerBootstrapListener() {
         super();
     }
 
@@ -42,16 +45,22 @@ public class SeimiCrawlerBootstrapListener implements ApplicationListener<Contex
 
     /**
      * Handle an application event.
-     *
      * @param event the event to respond to
      */
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         ApplicationContext context = event.getApplicationContext();
-        if (isSpringBoot){
+        List<String> enabledCrawlers = new ArrayList<>();
+        if (isSpringBoot) {
             CrawlerProperties crawlerProperties = context.getBean(CrawlerProperties.class);
-            if (!crawlerProperties.isEnabled()){
-                logger.warn("{} is not enabled",Constants.SEIMI_CRAWLER_BOOTSTRAP_ENABLED);
+            if (!crawlerProperties.isEnabled()) {
+                logger.warn("{} is not enabled", Constants.SEIMI_CRAWLER_BOOTSTRAP_ENABLED);
+                return;
+            }
+
+            enabledCrawlers = Arrays.asList(crawlerProperties.getNames().replace(" ", "").split(","));
+            if (enabledCrawlers.isEmpty()) {
+                logger.warn("Not find any crawler enabled,may be you need to check.");
                 return;
             }
         }
@@ -61,38 +70,45 @@ public class SeimiCrawlerBootstrapListener implements ApplicationListener<Contex
                 logger.info("Not find any crawler,may be you need to check.");
                 return;
             }
-            workersPool = Executors.newFixedThreadPool(Constants.BASE_THREAD_NUM * Runtime.getRuntime().availableProcessors() * CrawlerCache.getCrawlers().size());
+
+            int workersPoolSize = 0;
             for (Class<? extends BaseSeimiCrawler> a : CrawlerCache.getCrawlers()) {
                 CrawlerModel crawlerModel = new CrawlerModel(a, context);
+                if (isSpringBoot && !enabledCrawlers.contains(crawlerModel.getCrawlerName())) {
+                    continue;
+                }
                 if (CrawlerCache.isExist(crawlerModel.getCrawlerName())) {
                     logger.error("Crawler:{} is repeated,please check", crawlerModel.getCrawlerName());
                     throw new SeimiInitExcepiton(StrFormatUtil.info("Crawler:{} is repeated,please check", crawlerModel.getCrawlerName()));
                 }
+                workersPoolSize += crawlerModel.getThreadPoolSize();
                 CrawlerCache.putCrawlerModel(crawlerModel.getCrawlerName(), crawlerModel);
             }
 
+            workersPool = Executors.newFixedThreadPool(workersPoolSize);
+
             for (Map.Entry<String, CrawlerModel> crawlerEntry : CrawlerCache.getCrawlerModelContext().entrySet()) {
-                for (int i = 0; i < Constants.BASE_THREAD_NUM * Runtime.getRuntime().availableProcessors(); i++) {
+                if (isSpringBoot && !enabledCrawlers.contains(crawlerEntry.getKey())) {
+                    continue;
+                }
+                for (int i = 0; i < crawlerEntry.getValue().getThreadPoolSize(); i++) {
                     workersPool.execute(new SeimiProcessor(CrawlerCache.getInterceptors(), crawlerEntry.getValue()));
                 }
             }
 
-            if (isSpringBoot){
+            if (isSpringBoot) {
                 CrawlerProperties crawlerProperties = context.getBean(CrawlerProperties.class);
-                String crawlerNames = crawlerProperties.getNames();
-                if (StringUtils.isBlank(crawlerNames)){
-                    logger.info("Spring boot start [{}] as worker.",StringUtils.join(CrawlerCache.getCrawlerModelContext().keySet(),","));
-                }else {
-                    String[] crawlers = crawlerNames.split(",");
-                    for (String cn:crawlers){
-                        CrawlerModel crawlerModel = CrawlerCache.getCrawlerModel(cn);
-                        if (crawlerModel == null){
-                            logger.warn("Crawler name = {} is not existent.",cn);
-                            continue;
-                        }
-                        crawlerModel.startRequest();
+                logger.info("Spring boot start [{}] as worker.", StringUtils.join(enabledCrawlers, ","));
+
+                for (String cn : enabledCrawlers) {
+                    CrawlerModel crawlerModel = CrawlerCache.getCrawlerModel(cn);
+                    if (crawlerModel == null) {
+                        logger.warn("Crawler name = {} is not existent.", cn);
+                        continue;
                     }
+                    crawlerModel.startRequest();
                 }
+
                 //统一通用配置信息至 seimiConfig
                 SeimiConfig config = new SeimiConfig();
                 config.setBloomFilterExpectedInsertions(crawlerProperties.getBloomFilterExpectedInsertions());

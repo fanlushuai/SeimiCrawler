@@ -190,6 +190,15 @@ public class Request extends CommonObject {
      */
     private List<SeimiCookie> seimiCookies;
 
+    /**
+     * 使用cookie的特定的存储区域。
+     */
+    private String cookieField;
+
+    public String getCookieField() {
+        return cookieField;
+    }
+
     public void incrReqCount() {
         this.currentReqCount += 1;
     }
