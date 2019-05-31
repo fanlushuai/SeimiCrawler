@@ -143,7 +143,22 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.4.2</version>
+        </dependency>
+
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>xxx</id>
+            <url>file:/D:\code\auh-code\maven-repo</url>
+        </repository>
+    </distributionManagement>
+
 
     <build>
         <plugins>

@@ -17,6 +17,7 @@ package cn.wanghaomiao.seimi.core;
 
 import cn.wanghaomiao.seimi.annotation.Interceptor;
 import cn.wanghaomiao.seimi.def.BaseSeimiCrawler;
+import cn.wanghaomiao.seimi.http.SeimiCookie;
 import cn.wanghaomiao.seimi.http.SeimiHttpType;
 import cn.wanghaomiao.seimi.http.hc.HcDownloader;
 import cn.wanghaomiao.seimi.http.okhttp.OkHttpDownloader;
@@ -109,6 +110,10 @@ public class SeimiProcessor implements Runnable {
                         refreshCount += 1;
                     }
                 }
+
+                List<SeimiCookie> seimiCookies=downloader.getCookies(request.getUseCookieOfAccount(),request.getUrl());
+                //发送异步消息 存储cookies到外部
+
                 //处理回调函数
                 if (!request.isLambdaCb()){
                     doCallback(request, seimiResponse);

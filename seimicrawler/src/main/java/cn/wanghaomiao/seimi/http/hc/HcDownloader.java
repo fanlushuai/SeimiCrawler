@@ -32,6 +32,7 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.BasicHttpContext;
@@ -46,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -116,6 +118,21 @@ public class HcDownloader implements SeimiDownloader {
             cookie.setDomain(StringUtils.isNotBlank(seimiCookie.getDomain()) ? seimiCookie.getDomain() : StrFormatUtil.getDodmain(url));
             cookieStore.addCookie(cookie);
         }
+    }
+
+    @Override
+    public List<SeimiCookie> getCookies(String account, String url) {
+        CookieStore cookieStore = crawlerModel.getCookieStore(account);
+
+        url = StringUtils.isNotBlank(url) ? url : "/";
+
+        List<SeimiCookie> seimiCookies = new ArrayList<>();
+        for (Cookie cookie : cookieStore.getCookies()) {
+            if (cookie.getPath().equals(url)) {
+                seimiCookies.add(new SeimiCookie(cookie.getPath(), cookie.getDomain(), cookie.getName(), cookie.getValue()));
+            }
+        }
+        return seimiCookies;
     }
 
     private Response renderResponse(HttpResponse httpResponse, Request request, HttpContext httpContext) {

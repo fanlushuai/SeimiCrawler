@@ -20,6 +20,7 @@ import cn.wanghaomiao.seimi.core.SeimiCrawler;
 import cn.wanghaomiao.seimi.http.HttpMethod;
 import cn.wanghaomiao.seimi.http.SeimiAgentContentType;
 import cn.wanghaomiao.seimi.http.SeimiCookie;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -195,8 +196,18 @@ public class Request extends CommonObject {
      */
     private String cookieField;
 
-    public String getCookieField() {
-        return cookieField;
+    public void setCookieField(String cookieField) {
+        this.cookieField = cookieField;
+    }
+
+    /**
+     * 默认情况下，cookie还是根据crawler分离的。如果设置了cookieField，就可以实现多个crawler共享cookie
+     */
+    public String getCookieStorageKey() {
+        if (StringUtils.isEmpty(cookieField)) {
+            return crawlerName + getUseCookieOfAccount();
+        }
+        return cookieField + getUseCookieOfAccount();
     }
 
     public void incrReqCount() {

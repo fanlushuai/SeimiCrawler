@@ -116,6 +116,18 @@ public class OkHttpDownloader implements SeimiDownloader {
 
     }
 
+    @Override
+    public List<SeimiCookie> getCookies(String account, String url) {
+        CookiesManager cookiesManager = crawlerModel.getOkHttpCookiesManager(account);
+        try {
+            cookiesManager.loadForRequest(HttpUrl.get(new URI(url)));
+        } catch (URISyntaxException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return null;
+    }
+
     private Response renderResponse(okhttp3.Response hcResponse, Request request) {
         Response seimiResponse = new Response();
         seimiResponse.setSeimiHttpType(SeimiHttpType.OK_HTTP3);

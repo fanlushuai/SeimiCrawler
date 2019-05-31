@@ -51,10 +51,15 @@ public interface SeimiDownloader {
 
     /**
      * 添加cookie
-     * @param account 账号。没有采用默认global
-     * @param url
-     * @param seimiCookies
+     * @param account 账号。默认global
      */
     void addCookies(String account, String url, List<SeimiCookie> seimiCookies);
+
+    /**
+     * 获取cookie
+     * @param account 账号。默认global
+     */
+    List<SeimiCookie> getCookies(String account, String url);
+
 
 }

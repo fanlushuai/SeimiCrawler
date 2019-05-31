@@ -1,9 +1,13 @@
 package cn.wanghaomiao.seimi.core;
 
+import cn.wanghaomiao.seimi.http.SeimiCookie;
+
+import java.util.List;
+
 public interface SeimiCookiePool {
 
-    String get(String name);
+    void putCookies(String account, String url, List<SeimiCookie> seimiCookies);
 
-    void put(String name);
+    List<SeimiCookie> getCookies(String account, String url);
 
 }
